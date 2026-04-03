@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-space-grotesk);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -43,78 +43,88 @@
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ── Design System: The Kinetic Console ──────────────────────────── */
+  --nc-void:        #0c0e11;   /* Foundation / deepest background      */
+  --nc-surface-0:   #0c0e11;   /* Level 0 — base                       */
+  --nc-surface-1:   #12151b;   /* Level 1 — content areas              */
+  --nc-surface-2:   #1a1f2a;   /* Level 2 — interactive cards          */
+  --nc-surface-3:   #222838;   /* Level 3 — hover / elevated           */
+  --nc-cyan:        #69daff;   /* Primary — Electric Cyan              */
+  --nc-cyan-dim:    #00cffc;   /* Primary container                    */
+  --nc-mint:        #00ffa3;   /* Secondary — Neon Mint (success/flow) */
+  --nc-amber:       #ffc965;   /* Tertiary — Amber (warning/attention) */
+  --nc-error:       #ff716c;   /* Error — Critical / Blocker           */
+  --nc-ghost:       rgba(255,255,255,0.08); /* Ghost border at 8% */
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: #0c0e11;
+  --foreground: #e8eaf0;
+  --card: #12151b;
+  --card-foreground: #e8eaf0;
+  --popover: #1a1f2a;
+  --popover-foreground: #e8eaf0;
+  --primary: #69daff;
+  --primary-foreground: #0c0e11;
+  --secondary: #00ffa3;
+  --secondary-foreground: #0c0e11;
+  --muted: #1a1f2a;
+  --muted-foreground: #6b7280;
+  --accent: #1a1f2a;
+  --accent-foreground: #e8eaf0;
+  --destructive: #ff716c;
+  --border: rgba(255,255,255,0.08);
+  --input: #1a1f2a;
+  --ring: #69daff;
+  --chart-1: #69daff;
+  --chart-2: #00ffa3;
+  --chart-3: #ffc965;
+  --chart-4: #ff716c;
+  --chart-5: #a78bfa;
+  --radius: 0.5rem;
+  --sidebar: #0c0e11;
+  --sidebar-foreground: #e8eaf0;
+  --sidebar-primary: #69daff;
+  --sidebar-primary-foreground: #0c0e11;
+  --sidebar-accent: #1a1f2a;
+  --sidebar-accent-foreground: #e8eaf0;
+  --sidebar-border: rgba(255,255,255,0.06);
+  --sidebar-ring: #69daff;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #0c0e11;
+  --foreground: #e8eaf0;
+  --card: #12151b;
+  --card-foreground: #e8eaf0;
+  --popover: #1a1f2a;
+  --popover-foreground: #e8eaf0;
+  --primary: #69daff;
+  --primary-foreground: #0c0e11;
+  --secondary: #00ffa3;
+  --secondary-foreground: #0c0e11;
+  --muted: #1a1f2a;
+  --muted-foreground: #6b7280;
+  --accent: #1a1f2a;
+  --accent-foreground: #e8eaf0;
+  --destructive: #ff716c;
+  --border: rgba(255,255,255,0.08);
+  --input: #1a1f2a;
+  --ring: #69daff;
+  --chart-1: #69daff;
+  --chart-2: #00ffa3;
+  --chart-3: #ffc965;
+  --chart-4: #ff716c;
+  --chart-5: #a78bfa;
+  --sidebar: #0c0e11;
+  --sidebar-foreground: #e8eaf0;
+  --sidebar-primary: #69daff;
+  --sidebar-primary-foreground: #0c0e11;
+  --sidebar-accent: #1a1f2a;
+  --sidebar-accent-foreground: #e8eaf0;
+  --sidebar-border: rgba(255,255,255,0.06);
+  --sidebar-ring: #69daff;
 }
 
 @layer base {
@@ -122,9 +132,48 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--nc-void);
+    color: var(--foreground);
+    font-family: var(--font-inter), system-ui, sans-serif;
   }
   html {
-    @apply font-sans;
+    @apply antialiased;
   }
+
+  /* Accessible focus ring — visible on keyboard navigation only */
+  :focus-visible {
+    outline: 2px solid var(--nc-cyan);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+}
+
+
+/* ── Space Grotesk utility class ──────────────────────────────────── */
+.font-heading {
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+}
+
+/* ── Kinetic glow on primary action buttons ───────────────────────── */
+.btn-primary-glow {
+  background: linear-gradient(135deg, var(--nc-cyan), var(--nc-cyan-dim));
+  color: var(--nc-void);
+  box-shadow: 0 0 20px rgba(105,218,255,0.25);
+}
+.btn-primary-glow:hover {
+  box-shadow: 0 0 32px rgba(105,218,255,0.4);
+}
+
+/* ── Nebula shadow for elevated floating elements ─────────────────── */
+.shadow-nebula {
+  box-shadow: 0px 24px 48px rgba(0,0,0,0.5);
+}
+
+/* ── Studio zoom transitions ──────────────────────────────────────── */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-slide {
+  animation: fadeSlideIn 0.18s ease-out both;
 }

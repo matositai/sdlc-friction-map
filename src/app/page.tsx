@@ -1,64 +1,151 @@
-import Image from "next/image";
+import { Header } from "@/components/layout/Header";
+import { MetricsCards, StudioDoraTable } from "@/components/dashboard/MetricsCards";
+import { FrictionHeatmap } from "@/components/dashboard/FrictionHeatmap";
+import { PipelineList } from "@/components/dashboard/PipelineList";
+import { FrictionAnalysis } from "@/components/ai/FrictionAnalysis";
+import { DevExScoreGrid } from "@/components/dashboard/DevExScore";
+import { AiAdoptionPanel } from "@/components/dashboard/AiAdoptionPanel";
+import { LeadTimeChart } from "@/components/charts/LeadTimeChart";
+import { DeployFrequencyChart } from "@/components/charts/DeployFrequencyChart";
+import { ChangeFailureChart } from "@/components/charts/ChangeFailureChart";
+import { FetchErrorBanner } from "@/components/errors/FetchErrorBanner";
+import { ErrorCard } from "@/components/errors/ErrorCard";
+import {
+  getLiveRepoData,
+  derivePipelines,
+  deriveDoraMetrics,
+  deriveDoraTrends,
+  deriveDevExScores,
+  deriveDashboardStats,
+} from "@/lib/live-data";
 
-export default function Home() {
+// Lightweight surface card — no shadcn Card to avoid stale classname overrides
+function Panel({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div
+      className={`rounded-lg overflow-hidden ${className}`}
+      style={{ backgroundColor: "var(--nc-surface-1)", border: "1px solid var(--nc-ghost)" }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function PanelHeader({ title, badge }: { title: string; badge?: React.ReactNode }) {
+  return (
+    <div className="px-5 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid var(--nc-ghost)" }}>
+      <h2 className="text-[10px] font-medium uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>{title}</h2>
+      {badge}
+    </div>
+  );
+}
+
+function CyanBadge({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-[9px] font-medium px-2 py-0.5 rounded" style={{ backgroundColor: "rgba(105,218,255,0.1)", color: "var(--nc-cyan)", border: "1px solid rgba(105,218,255,0.2)" }}>
+      {children}
+    </span>
+  );
+}
+
+export default async function DashboardPage() {
+  const result = await getLiveRepoData().catch(() => ({ data: [], errors: [], totalAttempted: 0, successCount: 0, isLive: false }));
+  const repoData = result.data;
+  const isLive = repoData.length > 0;
+
+  const pipelines = isLive ? derivePipelines(repoData) : undefined;
+  const doraMetrics = isLive ? deriveDoraMetrics(repoData) : undefined;
+  const doraTrends = isLive ? deriveDoraTrends(repoData) : undefined;
+  const devExScores = isLive ? deriveDevExScores(repoData) : undefined;
+  const stats = isLive ? deriveDashboardStats(repoData) : undefined;
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--nc-void)" }}>
+      <Header
+        title="SDLC Friction Dashboard"
+        subtitle="Open-source game engine repos · 6 repos · GitHub Actions"
+        isLive={isLive}
+      />
+
+      <main className="p-6 space-y-5 max-w-[1400px] w-full">
+        {/* Error banner if any fetches failed */}
+        {result.errors.length > 0 && (
+          <FetchErrorBanner errors={result.errors} successCount={result.successCount} totalAttempted={result.totalAttempted} />
+        )}
+
+        {/* Empty state if no data */}
+        {!isLive && result.errors.length === 0 && (
+          <ErrorCard
+            icon="📭"
+            title="No data to display"
+            message="No GitHub token configured. Add one in Settings to see live pipeline data."
+            variant="info"
+            action={{ label: "Go to Settings", onClick: () => (window.location.href = "/settings") }}
+          />
+        )}
+
+        {/* KPI cards */}
+        <MetricsCards stats={stats} metrics={doraMetrics} />
+
+        {/* Charts row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Panel className="lg:col-span-2">
+            <PanelHeader title="Lead Time for Changes" badge={<CyanBadge>30-day trend</CyanBadge>} />
+            <div className="p-4"><LeadTimeChart trends={doraTrends} /></div>
+          </Panel>
+          <Panel>
+            <PanelHeader title="Change Failure Rate" />
+            <div className="p-4"><ChangeFailureChart metrics={doraMetrics} /></div>
+          </Panel>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* DORA table + Deploy Freq */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Panel className="lg:col-span-2">
+            <PanelHeader title="DORA Metrics by Repo" />
+            <div className="p-4"><StudioDoraTable metrics={doraMetrics} /></div>
+          </Panel>
+          <Panel>
+            <PanelHeader title="Deployment Frequency" />
+            <div className="p-4"><DeployFrequencyChart metrics={doraMetrics} trends={doraTrends} /></div>
+          </Panel>
         </div>
+
+        {/* Friction heatmap */}
+        <Panel>
+          <PanelHeader title="SDLC Friction Heatmap" />
+          <div className="p-4"><FrictionHeatmap pipelines={pipelines} /></div>
+        </Panel>
+
+        {/* Pipeline list */}
+        <Panel>
+          <PanelHeader title="Pipeline Overview · GitHub Actions" />
+          <div className="p-4"><PipelineList pipelines={pipelines} /></div>
+        </Panel>
+
+        {/* DevEx scores */}
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-widest mb-4" style={{ color: "var(--muted-foreground)" }}>Developer Experience Scores</p>
+          <DevExScoreGrid scores={devExScores} />
+        </div>
+
+        {/* AI Adoption */}
+        <Panel>
+          <PanelHeader
+            title="AI-Augmented SDLC Adoption"
+            badge={<span className="text-[9px] px-2 py-0.5 rounded" style={{ backgroundColor: "var(--nc-surface-2)", color: "var(--muted-foreground)", border: "1px solid var(--nc-ghost)" }}>illustrative · hivel.ai framework</span>}
+          />
+          <div className="p-4"><AiAdoptionPanel /></div>
+        </Panel>
+
+        {/* AI Analysis */}
+        <Panel>
+          <PanelHeader
+            title="AI Friction Analysis"
+            badge={<span className="text-[9px] px-2 py-0.5 rounded" style={{ backgroundColor: "rgba(105,218,255,0.08)", color: "var(--nc-cyan)", border: "1px solid rgba(105,218,255,0.2)" }}>Powered by Claude</span>}
+          />
+          <div className="p-4"><FrictionAnalysis repoData={isLive ? repoData : undefined} /></div>
+        </Panel>
       </main>
     </div>
   );
