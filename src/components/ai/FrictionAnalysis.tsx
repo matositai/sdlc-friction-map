@@ -79,16 +79,22 @@ export function FrictionAnalysis({ repoData }: FrictionAnalysisProps = {}) {
     setResult(null);
     setCached(false);
     setError(null);
-    try {
-      const stored = localStorage.getItem(cacheKey(selectedStudio, fingerprint));
-      if (stored) {
-        const parsed = JSON.parse(stored) as AIAnalysisResult;
-        setResult(parsed);
-        setCached(true);
+
+    const fetchCachedReport = async () => {
+      try {
+        const key = cacheKey(selectedStudio, fingerprint);
+        const res = await fetch(`/api/ai-report?key=${encodeURIComponent(key)}`);
+        const { report } = await res.json();
+        if (report) {
+          setResult(report);
+          setCached(true);
+        }
+      } catch {
+        // Network error or KV not configured — just show "Analyze" button
       }
-    } catch {
-      // ignore parse errors — stale or corrupt entry
-    }
+    };
+
+    fetchCachedReport();
   }, [selectedStudio, fingerprint]);
 
   // Build selector options from real data or mock fallback
@@ -110,6 +116,7 @@ export function FrictionAnalysis({ repoData }: FrictionAnalysisProps = {}) {
 
       const payload: Record<string, unknown> = {
         studioId: selectedStudio === "all" ? undefined : selectedStudio,
+        fingerprint,
       };
 
       if (repoData && repoData.length > 0) {
@@ -138,15 +145,9 @@ export function FrictionAnalysis({ repoData }: FrictionAnalysisProps = {}) {
       }
 
       const analysisResult = data as AIAnalysisResult;
+      const isCached = data.cached === true;
       setResult(analysisResult);
-      setCached(false);
-
-      // Persist — keyed by studio + data fingerprint so stale reports auto-invalidate
-      try {
-        localStorage.setItem(cacheKey(selectedStudio, fingerprint), JSON.stringify(analysisResult));
-      } catch {
-        // storage quota exceeded — not critical
-      }
+      setCached(isCached);
     } catch {
       setError("Network error — check your connection");
     } finally {

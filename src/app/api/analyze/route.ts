@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { kv } from "@vercel/kv";
 import { mockPipelines, mockDoraMetrics } from "@/lib/mock-data";
 import type { Pipeline, DoraMetrics } from "@/lib/types";
 
@@ -15,11 +16,13 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const {
     studioId,
+    fingerprint,
     pipelines: bodyPipelines,
     doraMetrics: bodyDora,
     frictionSignals: bodyFrictionSignals,
   } = body as {
     studioId?: string;
+    fingerprint?: string;
     pipelines?: Pipeline[];
     doraMetrics?: DoraMetrics[];
     frictionSignals?: Record<string, unknown>[];
@@ -81,6 +84,20 @@ export async function POST(request: NextRequest) {
       .map((i) => ({ title: i.title, labels: i.labels })),
   }));
 
+  const cacheKey = fingerprint ? `ai-report:${studioId ?? "all"}:${fingerprint}` : null;
+
+  // Check KV cache first
+  if (cacheKey) {
+    try {
+      const cached = await kv.get(cacheKey);
+      if (cached) {
+        return NextResponse.json({ ...cached, cached: true });
+      }
+    } catch {
+      // KV not configured, proceed without cache
+    }
+  }
+
   const prompt = `You are an expert technical product manager specializing in developer experience (DevEx) and CI/CD platform optimization for a large game studio environment.
 
 Analyze the following SDLC pipeline data from ${isLiveData ? "real open-source game engine repositories" : "EA game studios"} and provide a structured friction analysis.
@@ -140,7 +157,17 @@ Format your response as valid JSON matching this schema exactly:
     if (!jsonMatch) throw new Error("No valid JSON in Claude response");
 
     const parsed = JSON.parse(jsonMatch[0]);
-    return NextResponse.json(parsed);
+
+    // Store in KV cache
+    if (cacheKey) {
+      try {
+        await kv.set(cacheKey, parsed);
+      } catch {
+        // KV not configured, skip caching
+      }
+    }
+
+    return NextResponse.json({ ...parsed, cached: false });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: `Analysis failed: ${message}` }, { status: 500 });
