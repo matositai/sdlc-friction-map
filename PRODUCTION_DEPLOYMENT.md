@@ -52,14 +52,16 @@ git push -u origin main
 3. Select the `sdlc-friction-map` repo you just created
 4. Click **Import**
 
-### 3b — Configure Environment Variables
+### 3b — Configure Environment Variables (Part 1)
 
-In the Vercel dashboard, go to **Settings → Environment Variables** and add:
+In the Vercel dashboard, go to **Settings → Environment Variables** and add these two manually:
 
-| Variable | Value | Source |
-|----------|-------|--------|
-| `GITHUB_TOKEN` | Your GitHub personal access token | GitHub Settings → Developer Settings → Personal access tokens (classic) |
-| `ANTHROPIC_API_KEY` | Your Claude API key | [console.anthropic.com](https://console.anthropic.com) |
+| Variable | Source |
+|----------|--------|
+| `GITHUB_TOKEN` | [github.com/settings/tokens](https://github.com/settings/tokens) — Create new token (classic) |
+| `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) — Copy your API key |
+
+(Upstash credentials will be added automatically in step 3c)
 
 **GitHub Token Setup:**
 1. Go to [github.com/settings/tokens](https://github.com/settings/tokens)
@@ -76,14 +78,18 @@ In the Vercel dashboard, go to **Settings → Environment Variables** and add:
 2. Create or copy your existing API key
 3. Add to Vercel as `ANTHROPIC_API_KEY`
 
-### 3c — Set Up Vercel KV
+### 3c — Set Up Upstash Redis (for report caching)
 
-1. In Vercel dashboard, go to **Storage → Create → KV**
-2. Click **Create** (select any region)
-3. Click **Connect**
-4. Vercel automatically adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` to your environment
+1. In Vercel dashboard, go to **Storage → Upstash** (under "Marketplace Database Providers")
+2. Click **Create Database**
+3. Select:
+   - **Type:** Redis
+   - **Region:** Pick closest to your users (or leave default)
+   - Click **Create**
+4. Click **Connect** → Select your project → **Confirm**
+5. Vercel automatically adds `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to your environment
 
-Verify: You should see three new environment variables in Settings.
+Verify: In **Settings → Environment Variables**, you should see two new Upstash vars.
 
 ---
 

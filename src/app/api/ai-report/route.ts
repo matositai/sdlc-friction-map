@@ -12,7 +12,8 @@ export async function GET(req: Request) {
     const report = await kv.get(key);
     return Response.json({ report });
   } catch (error) {
-    // KV not configured (local dev without credentials)
+    // Upstash Redis not configured (local dev without credentials)
+    console.debug("KV get failed:", error instanceof Error ? error.message : String(error));
     return Response.json({ report: null });
   }
 }
