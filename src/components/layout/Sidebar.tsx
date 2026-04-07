@@ -89,9 +89,23 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-4" style={{ borderTop: "1px solid var(--nc-ghost)" }}>
-        <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>6 studios · GitHub · GitLab</p>
-        <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>AWS · Azure</p>
+      <div className="px-4 py-4 space-y-2" style={{ borderTop: "1px solid var(--nc-ghost)" }}>
+        <div>
+          <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>6 studios · GitHub · GitLab</p>
+          <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>AWS · Azure</p>
+        </div>
+        <div className="pt-2" style={{ borderTop: "1px solid var(--nc-ghost)" }}>
+          <p className="text-[9px]" style={{ color: "rgba(255,255,255,0.2)" }}>Built as a weekend project</p>
+          <a
+            href="mailto:matositai@gmail.com"
+            className="text-[9px] transition-colors"
+            style={{ color: "var(--nc-cyan)" }}
+            onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.opacity = "0.8"}
+            onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.opacity = "1"}
+          >
+            by Itai Matos
+          </a>
+        </div>
       </div>
     </aside>
   );

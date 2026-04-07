@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { addCustomRepo, type TrackedCustomRepo } from "@/lib/custom-repos";
-import { X, Plus, GitBranch, Check } from "lucide-react";
+import type { TrackedCustomRepo } from "@/lib/custom-repos";
+import { X, Plus, GitBranch, Check, AlertTriangle } from "lucide-react";
 
 const PRESET_COLORS = [
   "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444",
@@ -44,30 +44,50 @@ export function AddRepoPanel({ onClose, onAdded }: AddRepoPanelProps) {
   const [awsKey, setAwsKey] = useState("");
   const [awsSecret, setAwsSecret] = useState("");
   const [awsRegion, setAwsRegion] = useState("us-east-1");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSave() {
+  async function handleSave() {
     if (!displayName.trim()) return;
 
-    const id = `custom-${Date.now()}`;
-    const repo: TrackedCustomRepo = {
-      id,
-      provider,
-      displayName: displayName.trim(),
-      color,
-      eaAnalogue: eaAnalogue.trim() || undefined,
-    };
+    setSaving(true);
+    setError(null);
 
-    if (provider === "github") repo.github = { owner: ghOwner.trim(), repo: ghRepo.trim(), token: ghToken.trim() || undefined };
-    if (provider === "gitlab") repo.gitlab = { projectPath: glPath.trim(), host: glHost.trim() || "gitlab.com", token: glToken.trim() || undefined };
-    if (provider === "azure") repo.azure = { org: azOrg.trim(), project: azProject.trim(), token: azToken.trim() };
-    if (provider === "aws") repo.aws = { accessKeyId: awsKey.trim(), secretAccessKey: awsSecret.trim(), region: awsRegion };
+    try {
+      const id = `custom-${Date.now()}`;
+      const repo: TrackedCustomRepo = {
+        id,
+        provider,
+        displayName: displayName.trim(),
+        color,
+        eaAnalogue: eaAnalogue.trim() || undefined,
+      };
 
-    addCustomRepo(repo);
-    setSaved(true);
-    setTimeout(() => {
-      onAdded();
-      onClose();
-    }, 800);
+      if (provider === "github") repo.github = { owner: ghOwner.trim(), repo: ghRepo.trim(), token: ghToken.trim() || undefined };
+      if (provider === "gitlab") repo.gitlab = { projectPath: glPath.trim(), host: glHost.trim() || "gitlab.com", token: glToken.trim() || undefined };
+      if (provider === "azure") repo.azure = { org: azOrg.trim(), project: azProject.trim(), token: azToken.trim() };
+      if (provider === "aws") repo.aws = { accessKeyId: awsKey.trim(), secretAccessKey: awsSecret.trim(), region: awsRegion };
+
+      // POST to server instead of localStorage
+      const response = await fetch("/api/custom-repos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(repo),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save repo");
+      }
+
+      setSaved(true);
+      setTimeout(() => {
+        onAdded();
+        onClose();
+      }, 800);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save repo");
+      setSaving(false);
+    }
   }
 
   const providerTabs: { id: Provider; label: string; color: string }[] = [
@@ -248,17 +268,30 @@ export function AddRepoPanel({ onClose, onAdded }: AddRepoPanelProps) {
           </div>
         </div>
 
+        {/* Error display */}
+        {error && (
+          <div className="p-4 mx-5 mt-4 rounded bg-red-950/30 border border-red-900/50 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-500" />
+            <p className="text-xs text-red-400">{error}</p>
+          </div>
+        )}
+
         {/* Footer */}
-        <div className="p-5 border-t border-zinc-800 flex items-center gap-3">
+        <div className="p-5 border-t border-zinc-800 flex items-center gap-3 mt-auto">
           <Button
             onClick={handleSave}
-            disabled={!displayName.trim() || saved}
+            disabled={!displayName.trim() || saved || saving}
             className="bg-blue-600 hover:bg-blue-500 text-white text-sm h-9 flex-1"
           >
             {saved ? (
               <>
                 <Check className="w-3.5 h-3.5 mr-1.5" />
                 Saved!
+              </>
+            ) : saving ? (
+              <>
+                <div className="w-3.5 h-3.5 mr-1.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Saving...
               </>
             ) : (
               <>

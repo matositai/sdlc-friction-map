@@ -1,20 +1,15 @@
 import { Header } from "@/components/layout/Header";
-import { MetricsCards, StudioDoraTable } from "@/components/dashboard/MetricsCards";
-import { FrictionHeatmap } from "@/components/dashboard/FrictionHeatmap";
+import { MetricsCards } from "@/components/dashboard/MetricsCards";
 import { PipelineList } from "@/components/dashboard/PipelineList";
 import { FrictionAnalysis } from "@/components/ai/FrictionAnalysis";
 import { DevExScoreGrid } from "@/components/dashboard/DevExScore";
 import { AiAdoptionPanel } from "@/components/dashboard/AiAdoptionPanel";
-import { LeadTimeChart } from "@/components/charts/LeadTimeChart";
-import { DeployFrequencyChart } from "@/components/charts/DeployFrequencyChart";
-import { ChangeFailureChart } from "@/components/charts/ChangeFailureChart";
 import { FetchErrorBanner } from "@/components/errors/FetchErrorBanner";
 import { ErrorCard } from "@/components/errors/ErrorCard";
 import {
   getLiveRepoData,
   derivePipelines,
   deriveDoraMetrics,
-  deriveDoraTrends,
   deriveDevExScores,
   deriveDashboardStats,
 } from "@/lib/live-data";
@@ -40,14 +35,6 @@ function PanelHeader({ title, badge }: { title: string; badge?: React.ReactNode 
   );
 }
 
-function CyanBadge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="text-[9px] font-medium px-2 py-0.5 rounded" style={{ backgroundColor: "rgba(105,218,255,0.1)", color: "var(--nc-cyan)", border: "1px solid rgba(105,218,255,0.2)" }}>
-      {children}
-    </span>
-  );
-}
-
 export default async function DashboardPage() {
   const result = await getLiveRepoData().catch(() => ({ data: [], errors: [], totalAttempted: 0, successCount: 0, isLive: false }));
   const repoData = result.data;
@@ -55,7 +42,6 @@ export default async function DashboardPage() {
 
   const pipelines = isLive ? derivePipelines(repoData) : undefined;
   const doraMetrics = isLive ? deriveDoraMetrics(repoData) : undefined;
-  const doraTrends = isLive ? deriveDoraTrends(repoData) : undefined;
   const devExScores = isLive ? deriveDevExScores(repoData) : undefined;
   const stats = isLive ? deriveDashboardStats(repoData) : undefined;
 
@@ -86,36 +72,6 @@ export default async function DashboardPage() {
 
         {/* KPI cards */}
         <MetricsCards stats={stats} metrics={doraMetrics} />
-
-        {/* Charts row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Panel className="lg:col-span-2">
-            <PanelHeader title="Lead Time for Changes" badge={<CyanBadge>30-day trend</CyanBadge>} />
-            <div className="p-4"><LeadTimeChart trends={doraTrends} /></div>
-          </Panel>
-          <Panel>
-            <PanelHeader title="Change Failure Rate" />
-            <div className="p-4"><ChangeFailureChart metrics={doraMetrics} /></div>
-          </Panel>
-        </div>
-
-        {/* DORA table + Deploy Freq */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Panel className="lg:col-span-2">
-            <PanelHeader title="DORA Metrics by Repo" />
-            <div className="p-4"><StudioDoraTable metrics={doraMetrics} /></div>
-          </Panel>
-          <Panel>
-            <PanelHeader title="Deployment Frequency" />
-            <div className="p-4"><DeployFrequencyChart metrics={doraMetrics} trends={doraTrends} /></div>
-          </Panel>
-        </div>
-
-        {/* Friction heatmap */}
-        <Panel>
-          <PanelHeader title="SDLC Friction Heatmap" />
-          <div className="p-4"><FrictionHeatmap pipelines={pipelines} /></div>
-        </Panel>
 
         {/* Pipeline list */}
         <Panel>

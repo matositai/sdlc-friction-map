@@ -4,12 +4,20 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { AddRepoPanel } from "./AddRepoPanel";
 
-export function AddRepoButton() {
+interface AddRepoButtonProps {
+  onAdded?: () => void;
+}
+
+export function AddRepoButton({ onAdded }: AddRepoButtonProps = {}) {
   const [open, setOpen] = useState(false);
 
   function handleAdded() {
-    // Reload to pick up localStorage changes
-    window.location.reload();
+    // Call parent callback if provided, otherwise reload (fallback for backward compat)
+    if (onAdded) {
+      onAdded();
+    } else {
+      window.location.reload();
+    }
   }
 
   return (

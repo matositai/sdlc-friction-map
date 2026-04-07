@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CANONICAL_REPOS } from "@/lib/repo-config";
 import type { RepoLiveData } from "@/lib/repo-fetcher";
 import type { DashboardStats, FrictionLevel, DoraMetrics, Pipeline, DevExScoreBreakdown, SDLCStage, StageMetrics } from "@/lib/types";
-import { getCustomRepos, type TrackedCustomRepo } from "@/lib/custom-repos";
+import type { TrackedCustomRepo } from "@/lib/custom-repos";
 import { StudioDetail, DoraTierBadge } from "@/components/dashboard/StudioDetail";
 import { FrictionAnalysis } from "@/components/ai/FrictionAnalysis";
 import { AddRepoButton } from "@/components/dashboard/AddRepoButton";
-import { cn } from "@/lib/utils";
-import { ChevronLeft, TrendingUp, TrendingDown, Minus, ExternalLink, Loader2 } from "lucide-react";
+import { ChevronLeft, ExternalLink } from "lucide-react";
 
 // ── Color helpers ─────────────────────────────────────────────────────────────
 
@@ -599,9 +598,19 @@ export function StudiosClient({ repoData, stats, isLive }: StudiosClientProps) {
   const [selectedCustomRepo, setSelectedCustomRepo] = useState<TrackedCustomRepo | null>(null);
   const [customRepos, setCustomRepos] = useState<TrackedCustomRepo[]>([]);
 
-  useEffect(() => {
-    setCustomRepos(getCustomRepos());
+  const fetchCustomRepos = useCallback(async () => {
+    try {
+      const res = await fetch("/api/custom-repos");
+      const { repos } = await res.json();
+      setCustomRepos(repos ?? []);
+    } catch {
+      setCustomRepos([]);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchCustomRepos();
+  }, [fetchCustomRepos]);
 
   const studioMap = new Map(repoData.map((r) => [r.dora.studioId, r]));
   const selectedConfig = selectedId ? CANONICAL_REPOS.find((r) => r.studioId === selectedId) : null;
